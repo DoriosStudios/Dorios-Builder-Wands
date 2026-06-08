@@ -1,0 +1,20 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "builder_wands:builder_wand_outline",
+      "materials": {
+        "default": "builder_wand_outline"
+      },
+      "textures": {
+        "default": "textures/entity/builder_wand_outline"
+      },
+      "geometry": {
+        "default": "geometry.builder_wands_builder_wand_outline"
+      },
+      "render_controllers": [
+        "controller.render.builder_wands_builder_wand_outline"
+      ]
+    }
+  }
+}

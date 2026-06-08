@@ -1,0 +1,27 @@
+{
+  "resource_pack_name": "builder_wands",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "builder_wands_wood_builder_wand": {
+      "textures": "textures/items/stick"
+    },
+    "builder_wands_stone_builder_wand": {
+      "textures": "textures/items/stone_pickaxe"
+    },
+    "builder_wands_copper_builder_wand": {
+      "textures": "textures/items/copper_ingot"
+    },
+    "builder_wands_iron_builder_wand": {
+      "textures": "textures/items/iron_ingot"
+    },
+    "builder_wands_emerald_builder_wand": {
+      "textures": "textures/items/emerald"
+    },
+    "builder_wands_diamond_builder_wand": {
+      "textures": "textures/items/diamond"
+    },
+    "builder_wands_netherite_builder_wand": {
+      "textures": "textures/items/netherite_ingot"
+    }
+  }
+}

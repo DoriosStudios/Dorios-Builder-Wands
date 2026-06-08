@@ -1,0 +1,46 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "builder_wands:copper_builder_wand",
+      "menu_category": {
+        "category": "equipment",
+        "group": "minecraft:itemGroup.name.tools"
+      }
+    },
+    "components": {
+      "minecraft:icon": "builder_wands_copper_builder_wand",
+      "builder_wands:builder_wand": {
+        "max_placements": 16
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:hand_equipped": true,
+      "minecraft:cooldown": {
+        "category": "builder_wand",
+        "duration": 0.3
+      },
+      "minecraft:durability": {
+        "damage_chance": {
+          "min": 100,
+          "max": 100
+        },
+        "max_durability": 250
+      },
+      "minecraft:tags": {
+        "tags": [
+          "builder_wands:is_builder_wand"
+        ]
+      },
+      "minecraft:repairable": {
+        "repair_items": [
+          {
+            "items": [
+              "minecraft:copper_ingot"
+            ],
+            "repair_amount": "q.max_durability * 0.25"
+          }
+        ]
+      }
+    }
+  }
+}

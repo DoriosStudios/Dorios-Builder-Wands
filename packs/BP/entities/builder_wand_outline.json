@@ -1,0 +1,55 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "builder_wands:builder_wand_outline",
+      "is_spawnable": false,
+      "is_summonable": true,
+      "is_experimental": false,
+      "properties": {
+        "builder_wands:edge_x_y0_z0": { "type": "bool", "default": false, "client_sync": true },
+        "builder_wands:edge_x_y0_z1": { "type": "bool", "default": false, "client_sync": true },
+        "builder_wands:edge_x_y1_z0": { "type": "bool", "default": false, "client_sync": true },
+        "builder_wands:edge_x_y1_z1": { "type": "bool", "default": false, "client_sync": true },
+        "builder_wands:edge_y_x0_z0": { "type": "bool", "default": false, "client_sync": true },
+        "builder_wands:edge_y_x0_z1": { "type": "bool", "default": false, "client_sync": true },
+        "builder_wands:edge_y_x1_z0": { "type": "bool", "default": false, "client_sync": true },
+        "builder_wands:edge_y_x1_z1": { "type": "bool", "default": false, "client_sync": true },
+        "builder_wands:edge_z_x0_y0": { "type": "bool", "default": false, "client_sync": true },
+        "builder_wands:edge_z_x0_y1": { "type": "bool", "default": false, "client_sync": true },
+        "builder_wands:edge_z_x1_y0": { "type": "bool", "default": false, "client_sync": true },
+        "builder_wands:edge_z_x1_y1": { "type": "bool", "default": false, "client_sync": true }
+      }
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "inanimate",
+          "builder_wand_outline"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.0,
+        "height": 0.0
+      },
+      "minecraft:health": {
+        "value": 1,
+        "max": 1
+      },
+      "minecraft:physics": {
+        "has_collision": false,
+        "has_gravity": false
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:damage_sensor": {
+        "triggers": {
+          "cause": "all",
+          "deals_damage": "no"
+        }
+      }
+    }
+  }
+}
