@@ -39,36 +39,6 @@ const FACE_NORMALS = {
 const handledTickByPlayerId = new Map();
 const activeOutlinesByPlayerId = new Map();
 
-const OUTLINE_EDGE_PROPERTIES = [
-  "builder_wands:edge_x_y0_z0",
-  "builder_wands:edge_x_y0_z1",
-  "builder_wands:edge_x_y1_z0",
-  "builder_wands:edge_x_y1_z1",
-  "builder_wands:edge_y_x0_z0",
-  "builder_wands:edge_y_x0_z1",
-  "builder_wands:edge_y_x1_z0",
-  "builder_wands:edge_y_x1_z1",
-  "builder_wands:edge_z_x0_y0",
-  "builder_wands:edge_z_x0_y1",
-  "builder_wands:edge_z_x1_y0",
-  "builder_wands:edge_z_x1_y1"
-];
-
-const OUTLINE_EDGE_DEFS = [
-  { property: "builder_wands:edge_x_y0_z0", axis: "x", ySide: 0, zSide: 1 },
-  { property: "builder_wands:edge_x_y0_z1", axis: "x", ySide: 0, zSide: 0 },
-  { property: "builder_wands:edge_x_y1_z0", axis: "x", ySide: 1, zSide: 1 },
-  { property: "builder_wands:edge_x_y1_z1", axis: "x", ySide: 1, zSide: 0 },
-  { property: "builder_wands:edge_y_x0_z0", axis: "y", xSide: 0, zSide: 1 },
-  { property: "builder_wands:edge_y_x0_z1", axis: "y", xSide: 0, zSide: 0 },
-  { property: "builder_wands:edge_y_x1_z0", axis: "y", xSide: 1, zSide: 1 },
-  { property: "builder_wands:edge_y_x1_z1", axis: "y", xSide: 1, zSide: 0 },
-  { property: "builder_wands:edge_z_x0_y0", axis: "z", xSide: 0, ySide: 0 },
-  { property: "builder_wands:edge_z_x0_y1", axis: "z", xSide: 0, ySide: 1 },
-  { property: "builder_wands:edge_z_x1_y0", axis: "z", xSide: 1, ySide: 0 },
-  { property: "builder_wands:edge_z_x1_y1", axis: "z", xSide: 1, ySide: 1 }
-];
-
 /**
  * Reads a block defensively, since unloaded chunks and world-height limits can
  * throw from dimension.getBlock.
@@ -682,99 +652,6 @@ function getOutlineSignature(player, blocks) {
   return `${player.dimension.id};${blocks.map((block) => blockKey(block.location)).join("|")}`;
 }
 
-function sideCandidates(value, side) {
-  return side === 0 ? [value - 1, value] : [value, value + 1];
-}
-
-/**
- * Gets the four block cells touching one edge of a block.
- *
- * @param {{x: number, y: number, z: number}} location Block location.
- * @param {{axis: string, xSide?: number, ySide?: number, zSide?: number}} edgeDef Edge definition.
- * @returns {{x: number, y: number, z: number}[]} Neighboring cells around the edge.
- */
-function cellsAroundEdge(location, edgeDef) {
-  const cells = [];
-
-  if (edgeDef.axis === "x") {
-    for (const y of sideCandidates(location.y, edgeDef.ySide)) {
-      for (const z of sideCandidates(location.z, edgeDef.zSide)) cells.push({ x: location.x, y, z });
-    }
-  } else if (edgeDef.axis === "y") {
-    for (const x of sideCandidates(location.x, edgeDef.xSide)) {
-      for (const z of sideCandidates(location.z, edgeDef.zSide)) cells.push({ x, y: location.y, z });
-    }
-  } else {
-    for (const x of sideCandidates(location.x, edgeDef.xSide)) {
-      for (const y of sideCandidates(location.y, edgeDef.ySide)) cells.push({ x, y, z: location.z });
-    }
-  }
-
-  return cells;
-}
-
-/**
- * @param {number[]} selectedIndexes Selected cell indexes around an edge.
- * @returns {boolean} Whether the edge should be visible.
- */
-function shouldShowEdge(selectedIndexes) {
-  if (selectedIndexes.length === 1 || selectedIndexes.length === 3) return true;
-  return selectedIndexes.length === 2 &&
-    ((selectedIndexes[0] === 0 && selectedIndexes[1] === 3) ||
-      (selectedIndexes[0] === 1 && selectedIndexes[1] === 2));
-}
-
-/**
- * Builds a per-block map of visible outline edge properties.
- *
- * @param {import("@minecraft/server").Block[]} blocks Preview blocks.
- * @returns {Map<string, Set<string>>} Visible edge properties by block key.
- */
-function createOutlineEdgeMap(blocks) {
-  const selected = new Set(blocks.map((block) => blockKey(block.location)));
-  const edgeMap = new Map();
-
-  for (const block of blocks) {
-    const currentKey = blockKey(block.location);
-
-    for (const edgeDef of OUTLINE_EDGE_DEFS) {
-      const cells = cellsAroundEdge(block.location, edgeDef);
-      const selectedIndexes = [];
-      const selectedKeys = [];
-
-      for (let index = 0; index < cells.length; index++) {
-        const key = blockKey(cells[index]);
-        if (!selected.has(key)) continue;
-
-        selectedIndexes.push(index);
-        selectedKeys.push(key);
-      }
-
-      if (!shouldShowEdge(selectedIndexes)) continue;
-      if (selectedKeys.sort()[0] !== currentKey) continue;
-
-      if (!edgeMap.has(currentKey)) edgeMap.set(currentKey, new Set());
-      edgeMap.get(currentKey).add(edgeDef.property);
-    }
-  }
-
-  return edgeMap;
-}
-
-/**
- * Applies synced edge properties to one outline entity.
- *
- * @param {import("@minecraft/server").Entity} entity Outline entity.
- * @param {Set<string>} visibleEdges Visible edge property ids.
- */
-function applyOutlineEdges(entity, visibleEdges) {
-  for (const property of OUTLINE_EDGE_PROPERTIES) {
-    try {
-      entity.setProperty(property, visibleEdges.has(property));
-    } catch {}
-  }
-}
-
 /**
  * Replaces a player's preview outline with entities that match the given block
  * list.
@@ -796,12 +673,8 @@ function setPlayerOutline(player, blocks) {
   clearPlayerOutline(player.id);
 
   const entities = [];
-  const edgeMap = createOutlineEdgeMap(blocks);
 
   for (const block of blocks) {
-    const visibleEdges = edgeMap.get(blockKey(block.location));
-    if (!visibleEdges || visibleEdges.size === 0) continue;
-
     try {
       const { x, y, z } = block.location;
       const entity = block.dimension.spawnEntity(OUTLINE_ENTITY_ID, {
@@ -809,7 +682,6 @@ function setPlayerOutline(player, blocks) {
         y,
         z: z + 0.5
       });
-      applyOutlineEdges(entity, visibleEdges);
       entities.push(entity);
     } catch {}
   }

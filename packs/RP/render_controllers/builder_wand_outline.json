@@ -11,20 +11,6 @@
       "textures": [
         "Texture.default"
       ],
-      "part_visibility": [
-        { "edge_x_y0_z0": "query.property('builder_wands:edge_x_y0_z0')" },
-        { "edge_x_y0_z1": "query.property('builder_wands:edge_x_y0_z1')" },
-        { "edge_x_y1_z0": "query.property('builder_wands:edge_x_y1_z0')" },
-        { "edge_x_y1_z1": "query.property('builder_wands:edge_x_y1_z1')" },
-        { "edge_y_x0_z0": "query.property('builder_wands:edge_y_x0_z0')" },
-        { "edge_y_x0_z1": "query.property('builder_wands:edge_y_x0_z1')" },
-        { "edge_y_x1_z0": "query.property('builder_wands:edge_y_x1_z0')" },
-        { "edge_y_x1_z1": "query.property('builder_wands:edge_y_x1_z1')" },
-        { "edge_z_x0_y0": "query.property('builder_wands:edge_z_x0_y0')" },
-        { "edge_z_x0_y1": "query.property('builder_wands:edge_z_x0_y1')" },
-        { "edge_z_x1_y0": "query.property('builder_wands:edge_z_x1_y0')" },
-        { "edge_z_x1_y1": "query.property('builder_wands:edge_z_x1_y1')" }
-      ],
       "ignore_lighting": true
     }
   }

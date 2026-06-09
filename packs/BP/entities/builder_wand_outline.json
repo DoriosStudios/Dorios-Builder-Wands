@@ -5,21 +5,7 @@
       "identifier": "builder_wands:builder_wand_outline",
       "is_spawnable": false,
       "is_summonable": true,
-      "is_experimental": false,
-      "properties": {
-        "builder_wands:edge_x_y0_z0": { "type": "bool", "default": false, "client_sync": true },
-        "builder_wands:edge_x_y0_z1": { "type": "bool", "default": false, "client_sync": true },
-        "builder_wands:edge_x_y1_z0": { "type": "bool", "default": false, "client_sync": true },
-        "builder_wands:edge_x_y1_z1": { "type": "bool", "default": false, "client_sync": true },
-        "builder_wands:edge_y_x0_z0": { "type": "bool", "default": false, "client_sync": true },
-        "builder_wands:edge_y_x0_z1": { "type": "bool", "default": false, "client_sync": true },
-        "builder_wands:edge_y_x1_z0": { "type": "bool", "default": false, "client_sync": true },
-        "builder_wands:edge_y_x1_z1": { "type": "bool", "default": false, "client_sync": true },
-        "builder_wands:edge_z_x0_y0": { "type": "bool", "default": false, "client_sync": true },
-        "builder_wands:edge_z_x0_y1": { "type": "bool", "default": false, "client_sync": true },
-        "builder_wands:edge_z_x1_y0": { "type": "bool", "default": false, "client_sync": true },
-        "builder_wands:edge_z_x1_y1": { "type": "bool", "default": false, "client_sync": true }
-      }
+      "is_experimental": false
     },
     "components": {
       "minecraft:type_family": {
