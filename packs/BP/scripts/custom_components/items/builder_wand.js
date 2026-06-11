@@ -4,6 +4,7 @@ const COOLDOWN_GROUP = "builder_wand";
 const DEFAULT_MAX_PLACEMENTS = 64;
 const HARD_MAX_PLACEMENTS = 512;
 const USE_COOLDOWN_TICKS = 6;
+const WAND_COMPONENT_ID = "builder_wands:builder_wand";
 const OUTLINE_ENTITY_ID = "builder_wands:builder_wand_outline";
 const PREVIEW_PROPERTY = "builder_wands:preview_enabled";
 const PREVIEW_MODE_PROPERTY = "builder_wands:preview_mode";
@@ -11,19 +12,10 @@ const PREVIEW_MODE_FULL = "full";
 const PREVIEW_MODE_SMART = "smart";
 const OUTLINE_UPDATE_TICKS = 10;
 const BLOCKLIST_TAG = "builder_wands:builder_wand_blocked";
+const DIMENSION_IDS = ["overworld", "nether", "the_end"];
 const DEFAULT_ENTITY_WIDTH = 0.6;
 const DEFAULT_ENTITY_HEIGHT = 1.8;
 const COLLISION_EPSILON = 0.0001;
-
-const WAND_LIMITS_BY_ITEM = {
-  "builder_wands:wood_builder_wand": 4,
-  "builder_wands:stone_builder_wand": 9,
-  "builder_wands:copper_builder_wand": 16,
-  "builder_wands:iron_builder_wand": 25,
-  "builder_wands:emerald_builder_wand": 36,
-  "builder_wands:diamond_builder_wand": 49,
-  "builder_wands:netherite_builder_wand": 64
-};
 
 const NEVER_COPY_BLOCKS = new Set([
   "minecraft:bee_nest",
@@ -301,17 +293,31 @@ function readWandSettings(params) {
 }
 
 /**
- * Reads the configured placement limit for the wand item currently in hand.
+ * Gets the builder wand component from an item stack, if present.
+ *
+ * @param {import("@minecraft/server").ItemStack|undefined} itemStack Held item.
+ * @returns {import("@minecraft/server").ItemCustomComponentInstance|undefined} Builder wand component.
+ */
+function getWandComponent(itemStack) {
+  try {
+    return itemStack?.getComponent?.(WAND_COMPONENT_ID);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Reads the configured placement limit from the wand item currently in hand.
  *
  * @param {import("@minecraft/server").Player} player Player to inspect.
  * @returns {{maxPlacements: number}|undefined} Wand settings, if holding a wand.
  */
 function readHeldWandSettings(player) {
   const itemStack = getHeldItem(player);
-  const maxPlacements = WAND_LIMITS_BY_ITEM[itemStack?.typeId];
-  if (!maxPlacements) return undefined;
+  const component = getWandComponent(itemStack);
+  if (!component) return undefined;
 
-  return readWandSettings({ max_placements: maxPlacements });
+  return readWandSettings(component.customComponentParameters?.params);
 }
 
 /**
@@ -640,7 +646,7 @@ function clearOfflineOutlines(activePlayerIds) {
  * Removes any leftover outline entities after reload.
  */
 function cleanupOutlineEntities() {
-  for (const dimensionId of ["overworld", "nether", "the_end"]) {
+  for (const dimensionId of DIMENSION_IDS) {
     try {
       const dimension = world.getDimension(dimensionId);
       for (const entity of dimension.getEntities({ type: OUTLINE_ENTITY_ID })) {
@@ -650,6 +656,45 @@ function cleanupOutlineEntities() {
   }
 
   activeOutlinesByPlayerId.clear();
+}
+
+/**
+ * Collects all outline entity IDs that are still owned by this script run.
+ *
+ * @returns {Set<string>} Currently tracked outline entity ids.
+ */
+function getTrackedOutlineEntityIds() {
+  const trackedIds = new Set();
+
+  for (const outline of activeOutlinesByPlayerId.values()) {
+    for (const entity of outline.entities) {
+      if (!isLiveObject(entity)) continue;
+
+      try {
+        trackedIds.add(entity.id);
+      } catch {}
+    }
+  }
+
+  return trackedIds;
+}
+
+/**
+ * Removes loaded outline entities that survived a script reload and no longer
+ * belong to any active preview tracked in memory.
+ */
+function cleanupOrphanedOutlineEntities() {
+  const trackedIds = getTrackedOutlineEntityIds();
+
+  for (const dimensionId of DIMENSION_IDS) {
+    try {
+      const dimension = world.getDimension(dimensionId);
+      for (const entity of dimension.getEntities({ type: OUTLINE_ENTITY_ID })) {
+        if (trackedIds.has(entity.id)) continue;
+        removeOutlineEntity(entity);
+      }
+    } catch {}
+  }
 }
 
 /**
@@ -923,7 +968,7 @@ function handleUseOn(eventData, params) {
 }
 
 system.beforeEvents.startup.subscribe(({ itemComponentRegistry }) => {
-  itemComponentRegistry.registerCustomComponent("builder_wands:builder_wand", {
+  itemComponentRegistry.registerCustomComponent(WAND_COMPONENT_ID, {
     onUseOn(eventData, componentData = {}) {
       handleUseOn(eventData, componentData.params);
     }
@@ -933,6 +978,8 @@ system.beforeEvents.startup.subscribe(({ itemComponentRegistry }) => {
 world.afterEvents.worldLoad.subscribe(() => {
   system.runTimeout(cleanupOutlineEntities, 1);
 });
+
+system.run(cleanupOutlineEntities);
 
 system.runInterval(() => {
   const players = world.getPlayers();
@@ -950,4 +997,6 @@ system.runInterval(() => {
       clearPlayerOutline(player.id);
     }
   }
+
+  cleanupOrphanedOutlineEntities();
 }, OUTLINE_UPDATE_TICKS);
