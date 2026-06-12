@@ -18,7 +18,7 @@
       "textures": "textures/items/iron_builder_wand"
     },
     "builder_wands_emerald_builder_wand": {
-      "textures": "textures/items/emerald"
+      "textures": "textures/items/emerald_builder_wand"
     },
     "builder_wands_diamond_builder_wand": {
       "textures": "textures/items/diamond_builder_wand"

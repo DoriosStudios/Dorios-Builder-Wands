@@ -988,7 +988,7 @@ system.runInterval(() => {
 
   for (const player of players) {
     try {
-      if (player.getDynamicProperty(PREVIEW_PROPERTY) !== true) {
+      if (player.getDynamicProperty(PREVIEW_PROPERTY) === false) {
         clearPlayerOutline(player.id);
         continue;
       }

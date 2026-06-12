@@ -28,7 +28,7 @@ function getPlayerSource(origin) {
  * @returns {boolean} The new preview state.
  */
 function togglePreviewFor(player) {
-  const enabled = player.getDynamicProperty(BUILDER_WAND_PREVIEW_PROPERTY) === true;
+  const enabled = player.getDynamicProperty(BUILDER_WAND_PREVIEW_PROPERTY) !== false;
   const nextEnabled = !enabled;
   player.setDynamicProperty(BUILDER_WAND_PREVIEW_PROPERTY, nextEnabled);
   return nextEnabled;
