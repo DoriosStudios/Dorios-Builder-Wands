@@ -1,36 +1,17 @@
 {
-  "format_version": "1.20.80",
-  "minecraft:recipe_shaped": {
+  "format_version": "1.20.20",
+  "minecraft:recipe_smithing_transform": {
     "description": {
       "identifier": "builder_wands:netherite_builder_wand"
     },
     "tags": [
-      "crafting_table"
+      "smithing_table"
     ],
-    "pattern": [
-      " MM",
-      " SM",
-      "S  "
-    ],
-    "key": {
-      "M": {
-        "item": "minecraft:netherite_ingot"
-      },
-      "S": {
-        "item": "minecraft:stick"
-      }
-    },
+    "template": "minecraft:netherite_upgrade_smithing_template",
+    "base": "builder_wands:diamond_builder_wand",
+    "addition": "minecraft:netherite_ingot",
     "result": {
-      "item": "builder_wands:netherite_builder_wand",
-      "count": 1
-    },
-    "unlock": [
-      {
-        "item": "minecraft:netherite_ingot"
-      },
-      {
-        "item": "minecraft:stick"
-      }
-    ]
+      "item": "builder_wands:netherite_builder_wand"
+    }
   }
 }

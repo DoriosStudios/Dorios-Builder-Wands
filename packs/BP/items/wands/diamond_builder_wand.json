@@ -28,7 +28,8 @@
       },
       "minecraft:tags": {
         "tags": [
-          "builder_wands:is_builder_wand"
+          "builder_wands:is_builder_wand",
+          "minecraft:transformable_items"
         ]
       },
       "minecraft:repairable": {

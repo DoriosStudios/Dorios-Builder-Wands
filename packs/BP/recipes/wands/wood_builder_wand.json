@@ -8,8 +8,8 @@
       "crafting_table"
     ],
     "pattern": [
-      " MM",
-      " SM",
+      "  M",
+      " L ",
       "S  "
     ],
     "key": {
@@ -18,6 +18,9 @@
       },
       "S": {
         "item": "minecraft:stick"
+      },
+      "L": {
+        "item": "minecraft:leather"
       }
     },
     "result": {
