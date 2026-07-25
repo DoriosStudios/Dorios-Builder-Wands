@@ -1,8 +1,8 @@
 {
   "format_version": 2,
   "header": {
-    "name": "Builder Wands RP",
-    "description": "Standalone builder wand resource pack.",
+    "name": "Dorios' Builder Wands RP",
+    "description": "v1.0.0 - Dorios Studios",
     "uuid": "e1ed5665-27d0-477e-922f-55d747630b33",
     "version": [1, 0, 0],
     "min_engine_version": [1, 21, 90]
