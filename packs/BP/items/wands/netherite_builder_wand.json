@@ -4,8 +4,7 @@
     "description": {
       "identifier": "builder_wands:netherite_builder_wand",
       "menu_category": {
-        "category": "equipment",
-        "group": "minecraft:itemGroup.name.tools"
+        "category": "equipment"
       }
     },
     "components": {

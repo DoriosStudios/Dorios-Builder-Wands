@@ -184,14 +184,50 @@ function takeOneItem(container, typeId) {
 }
 
 /**
+ * Detects entities anchored inside a source block cell. Machine add-ons often
+ * keep their inventory or state in an inanimate helper entity, so no entity
+ * families are excluded here. Only this add-on's own preview entity is ignored.
+ *
+ * Query failures are treated as occupied so the wand never copies a block that
+ * it could not verify safely.
+ *
+ * @param {import("@minecraft/server").Block} block Source block to inspect.
+ * @param {Map<string, boolean>|undefined} cache Per-plan occupancy cache.
+ * @returns {boolean} Whether the block cell contains a real entity.
+ */
+function blockContainsEntity(block, cache) {
+  const key = blockKey(block.location);
+  if (cache?.has(key)) return cache.get(key);
+
+  let containsEntity = true;
+  try {
+    containsEntity = block.dimension
+      .getEntitiesAtBlockLocation(block.location)
+      .some((entity) => {
+        if (!isLiveObject(entity)) return false;
+
+        try {
+          return entity.typeId !== OUTLINE_ENTITY_ID;
+        } catch {
+          return true;
+        }
+      });
+  } catch {}
+
+  cache?.set(key, containsEntity);
+  return containsEntity;
+}
+
+/**
  * Decides whether a source block can be copied and whether a target block can
  * be overwritten by the wand.
  *
  * @param {import("@minecraft/server").Block|undefined} block Block to inspect.
  * @param {"source"|"target"} mode Validation mode.
+ * @param {Map<string, boolean>|undefined} sourceEntityCache Per-plan source occupancy cache.
  * @returns {boolean} Whether the block passes the requested validation.
  */
-function isUsableBlock(block, mode) {
+function isUsableBlock(block, mode, sourceEntityCache) {
   if (!block) return false;
 
   const isAir = block.isAir !== undefined
@@ -203,6 +239,7 @@ function isUsableBlock(block, mode) {
 
   if (mode === "target") return isAir || isFluid;
   if (isAir || isFluid) return false;
+  if (blockContainsEntity(block, sourceEntityCache)) return false;
   if (NEVER_COPY_BLOCKS.has(block.typeId) || block.typeId?.includes("shulker")) return false;
 
   try {
@@ -463,9 +500,10 @@ function sortByBuildOrder(a, b) {
  * @param {[{x: number, y: number, z: number}, {x: number, y: number, z: number}]} axes Plane axes.
  * @param {string} sourceTypeId Block type that must be copied.
  * @param {{u: number, v: number}} offset Plane offset.
+ * @param {Map<string, boolean>} sourceEntityCache Per-plan source occupancy cache.
  * @returns {{sourceBlock: import("@minecraft/server").Block, targetBlock: import("@minecraft/server").Block}|undefined} Placement pair.
  */
-function placementAt(originBlock, faceNormal, axes, sourceTypeId, offset) {
+function placementAt(originBlock, faceNormal, axes, sourceTypeId, offset, sourceEntityCache) {
   const [uAxis, vAxis] = axes;
   const sourceLocation = {
     x: originBlock.location.x + uAxis.x * offset.u + vAxis.x * offset.v,
@@ -474,7 +512,10 @@ function placementAt(originBlock, faceNormal, axes, sourceTypeId, offset) {
   };
 
   const sourceBlock = safeBlockAt(originBlock.dimension, sourceLocation);
-  if (sourceBlock?.typeId !== sourceTypeId || !isUsableBlock(sourceBlock, "source")) return undefined;
+  if (
+    sourceBlock?.typeId !== sourceTypeId ||
+    !isUsableBlock(sourceBlock, "source", sourceEntityCache)
+  ) return undefined;
 
   const targetBlock = safeBlockAt(originBlock.dimension, {
     x: sourceLocation.x + faceNormal.x,
@@ -494,9 +535,10 @@ function placementAt(originBlock, faceNormal, axes, sourceTypeId, offset) {
  * @param {import("@minecraft/server").Block} originBlock Clicked block.
  * @param {{x: number, y: number, z: number}} faceNormal Clicked face normal.
  * @param {number} limit Maximum placements.
+ * @param {Map<string, boolean>} sourceEntityCache Per-plan source occupancy cache.
  * @returns {{u: number, v: number}[]} Ordered offsets to place.
  */
-function collectConnectedOffsets(originBlock, faceNormal, limit) {
+function collectConnectedOffsets(originBlock, faceNormal, limit, sourceEntityCache) {
   const axes = planeAxesFor(faceNormal);
   const sourceTypeId = originBlock.typeId;
   const gridSide = Math.max(1, Math.floor(Math.sqrt(limit)));
@@ -509,7 +551,7 @@ function collectConnectedOffsets(originBlock, faceNormal, limit) {
     for (let v = low; v <= high; v++) {
       const offset = { u, v };
       square.push(offset);
-      if (placementAt(originBlock, faceNormal, axes, sourceTypeId, offset)) {
+      if (placementAt(originBlock, faceNormal, axes, sourceTypeId, offset, sourceEntityCache)) {
         usable.set(`${u},${v}`, offset);
       }
     }
@@ -540,7 +582,7 @@ function collectConnectedOffsets(originBlock, faceNormal, limit) {
         continue;
       }
 
-      if (!placementAt(originBlock, faceNormal, axes, sourceTypeId, neighbor)) continue;
+      if (!placementAt(originBlock, faceNormal, axes, sourceTypeId, neighbor, sourceEntityCache)) continue;
       pending.push(neighbor);
       pendingKeys.add(key);
     }
@@ -555,7 +597,10 @@ function collectConnectedOffsets(originBlock, faceNormal, limit) {
 
     const inSeedSquare = usable.has(key) || square.some((squareOffset) => squareOffset.u === offset.u && squareOffset.v === offset.v);
     if (inSeedSquare && !usable.has(key)) continue;
-    if (!inSeedSquare && !placementAt(originBlock, faceNormal, axes, sourceTypeId, offset)) continue;
+    if (
+      !inSeedSquare &&
+      !placementAt(originBlock, faceNormal, axes, sourceTypeId, offset, sourceEntityCache)
+    ) continue;
 
     accepted.push(offset);
     acceptedKeys.add(key);
@@ -571,15 +616,30 @@ function collectConnectedOffsets(originBlock, faceNormal, limit) {
  * @param {import("@minecraft/server").Block} originBlock Clicked block.
  * @param {{x: number, y: number, z: number}} faceNormal Clicked face normal.
  * @param {number} limit Maximum placements.
+ * @param {Map<string, boolean>} [sourceEntityCache=new Map()] Per-plan source occupancy cache.
  * @returns {{sourceBlock: import("@minecraft/server").Block, targetBlock: import("@minecraft/server").Block}[]} Placement plan.
  */
-function planPlacements(originBlock, faceNormal, limit) {
+function planPlacements(originBlock, faceNormal, limit, sourceEntityCache = new Map()) {
+  if (!isUsableBlock(originBlock, "source", sourceEntityCache)) return [];
+
   const axes = planeAxesFor(faceNormal);
   const sourceTypeId = originBlock.typeId;
   const plan = [];
 
-  for (const offset of collectConnectedOffsets(originBlock, faceNormal, limit)) {
-    const placement = placementAt(originBlock, faceNormal, axes, sourceTypeId, offset);
+  for (const offset of collectConnectedOffsets(
+    originBlock,
+    faceNormal,
+    limit,
+    sourceEntityCache
+  )) {
+    const placement = placementAt(
+      originBlock,
+      faceNormal,
+      axes,
+      sourceTypeId,
+      offset,
+      sourceEntityCache
+    );
     if (placement) plan.push(placement);
     if (plan.length >= limit) break;
   }
@@ -896,7 +956,12 @@ function setPlayerOutline(player, blocks) {
  * @returns {number} Number of blocks placed.
  */
 function useBuilderWand(player, clickedBlock, faceNormal, settings) {
-  if (!isUsableBlock(clickedBlock, "source")) return 0;
+  const sourceEntityCache = new Map();
+  if (!isUsableBlock(clickedBlock, "source", sourceEntityCache)) {
+    showHint(player, "\u00a7cForbidden block");
+    playUseSound(player, "note.bass", 0.65);
+    return 0;
+  }
 
   const creative = isCreativePlayer(player);
   const inventory = getInventory(player);
@@ -907,7 +972,12 @@ function useBuilderWand(player, clickedBlock, faceNormal, settings) {
     return 0;
   }
 
-  const plan = planPlacements(clickedBlock, faceNormal, Math.min(settings.maxPlacements, available));
+  const plan = planPlacements(
+    clickedBlock,
+    faceNormal,
+    Math.min(settings.maxPlacements, available),
+    sourceEntityCache
+  );
   if (hasBlockedCell(player, plan)) {
     showHint(player, "\u00a7cEntity in the way");
     playUseSound(player, "note.bass", 0.65);
