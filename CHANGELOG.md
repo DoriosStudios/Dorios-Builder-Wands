@@ -1,3 +1,9 @@
+# Dorios’ Builder Wands v1.0.1
+
+## CHANGED
+
+- Renamed the add-on from Builder Wands to Dorios’ Builder Wands across its visible metadata, packs, builds, and repository branding.
+
 # Builder Wands v1.0.0
 
 The first release of Builder Wands introduces fast connected-surface building for Minecraft Bedrock Edition.

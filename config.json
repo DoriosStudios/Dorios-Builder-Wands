@@ -1,7 +1,7 @@
 {
 	"$schema": "https://raw.githubusercontent.com/Bedrock-OSS/regolith-schemas/main/config/v1.8.json",
-	"author": "Your name",
-	"name": "Builder Wands",
+	"author": "Dorios Studios",
+	"name": "Dorios’ Builder Wands",
 	"packs": {
 		"behaviorPack": "./packs/BP",
 		"resourcePack": "./packs/RP"

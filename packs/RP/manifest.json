@@ -1,10 +1,10 @@
 {
   "format_version": 2,
   "header": {
-    "name": "Dorios' Builder Wands RP",
-    "description": "v1.0.0 - Dorios Studios",
+    "name": "Dorios’ Builder Wands RP",
+    "description": "v1.0.1 - Dorios Studios",
     "uuid": "e1ed5665-27d0-477e-922f-55d747630b33",
-    "version": [1, 0, 0],
+    "version": [1, 0, 1],
     "min_engine_version": [1, 21, 90]
   },
   "modules": [
@@ -17,7 +17,7 @@
   "dependencies": [
     {
       "uuid": "2f65af75-01d1-4c4a-a4b7-b18a43a3f7c6",
-      "version": [1, 0, 0]
+      "version": [1, 0, 1]
     }
   ]
 }

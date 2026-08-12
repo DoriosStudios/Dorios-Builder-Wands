@@ -53,14 +53,14 @@ jobs:
           regolith run buildDev
           mkdir -p artifacts
           cd build
-          zip -r "../artifacts/${FILE_NAME}_dev.mcaddon" "Builder Wands BP" "Builder Wands RP"
+          zip -r "../artifacts/${FILE_NAME}_dev.mcaddon" "Dorios’ Builder Wands BP" "Dorios’ Builder Wands RP"
 
       - name: Build minified addon
         run: |
           rm -rf build
           regolith run buildMinify
           cd build
-          zip -r "../artifacts/${FILE_NAME}.mcaddon" "Builder Wands BP" "Builder Wands RP"
+          zip -r "../artifacts/${FILE_NAME}.mcaddon" "Dorios’ Builder Wands BP" "Dorios’ Builder Wands RP"
 
       - name: Upload release assets
         env:

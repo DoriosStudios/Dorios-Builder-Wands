@@ -1,4 +1,6 @@
 {
+  "name": "dorios-builder-wands",
+  "private": true,
   "dependencies": {
     "@minecraft/server": "^2.7.0"
   },
