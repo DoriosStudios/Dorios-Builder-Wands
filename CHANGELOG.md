@@ -1,5 +1,11 @@
 # Dorios’ Builder Wands v1.0.1
 
+This update establishes Dorios’ Builder Wands as the add-on's official name across its packs, builds and repository.
+
+## HIGHLIGHTS
+
+- Renamed Builder Wands to Dorios’ Builder Wands across all visible project branding.
+
 ## CHANGED
 
 - Renamed the add-on from Builder Wands to Dorios’ Builder Wands across its visible metadata, packs, builds, and repository branding.

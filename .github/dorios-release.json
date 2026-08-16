@@ -1,0 +1,45 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DoriosStudios/Dorios-Workflows/v1.0.2/releases/schemas/project.schema.json",
+  "schemaVersion": 1,
+  "project": {
+    "name": "Dorios’ Builder Wands",
+    "slug": "builder-wands"
+  },
+  "release": {
+    "changelogPath": "CHANGELOG.md",
+    "defaultChannel": "stable",
+    "bedrockManifestPaths": [
+      "packs/BP/manifest.json",
+      "packs/RP/manifest.json"
+    ]
+  },
+  "build": {
+    "enabled": true,
+    "type": "regolith",
+    "developmentProfile": "buildDev",
+    "releaseProfile": "buildMinify",
+    "outputDirectory": "build",
+    "packDirectories": [
+      "Dorios’ Builder Wands BP",
+      "Dorios’ Builder Wands RP"
+    ]
+  },
+  "distribution": {
+    "github": true,
+    "curseforge": {
+      "enabled": true,
+      "projectId": 1650477,
+      "gameVersion": "26.30"
+    }
+  },
+  "links": {
+    "curseforge": "https://www.curseforge.com/minecraft-bedrock/addons/dorios-builder-wands",
+    "mcpedl": "https://mcpedl.com/dorios-builder-wands/"
+  },
+  "announcement": {
+    "enabled": true,
+    "color": "505030",
+    "imageUrl": "https://raw.githubusercontent.com/DoriosStudios/Dorios-Builder-Wands/main/Assets/MCPEDL.png",
+    "automaticDelayMinutes": 60
+  }
+}
